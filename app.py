@@ -48,7 +48,7 @@ class UserProfile(db.Model, UserMixin):
     name = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    imgstr = db.Column(db.String(120))
+    imgstr = db.Column(db.String(120),default='0.6709606409289153')
     salary = db.Column(db.Integer, default=0)
     saving = db.Column(db.Integer, default=0)
 
@@ -161,6 +161,7 @@ def login():
                 # flash('login In Succesfully')
                 user = UserProfile.query.filter_by(
                     id=session.get('visits')).first()
+                print("--->>>",user.id)
                 return render_template('Dashboard.html', user=user)
             else:
                 flash('Password Is Incorrect')
@@ -179,6 +180,37 @@ def logout():
     flash('Logout Succesfully')
     return render_template('index.html', flag=1)
 
+@app.route('/profile',methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'GET':
+        print("current_user",current_user.id)
+        user = UserProfile.query.filter_by(id=current_user.id).first()
+        return render_template('profile.html',user=user)
+    if request.method == 'POST':
+        imgsrc = request.form["imgsrc"]
+        salary = request.form["salary"]
+        saving = request.form["saving"]
+        print(imgsrc,salary,saving)
+        user = UserProfile.query.filter_by(id=current_user.id).first()
+        user.imgstr = imgsrc
+        user.salary = salary
+        user.saving = saving
+        db.session.add(user)
+        db.session.commit()
+        return render_template('profile.html',user=user)
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    user = UserProfile.query.filter_by(id=current_user.id).first()
+
+    print("--->>>",session.get('visits'))
+    return render_template('Dashboard.html',user=user)
+
+@app.route('/report')
+@login_required
+def report():
+    return render_template('report.html')
 if __name__ == '__main__':
     app.run(debug=True)
