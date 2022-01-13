@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 import os
+import psycopg2
 from os.path import join, dirname
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,7 +16,7 @@ app = Flask(__name__)
 mail = Mail(app)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = os.environ['EMAILID']
+app.config['MAIL_USERNAME'] = os.environ['EMAIL']
 app.config['MAIL_PASSWORD'] = os.environ['PASSWORD']
 # app.config['MAIL_USERNAME']=''
 # app.config['MAIL_PASSWORD']=''
@@ -100,7 +101,7 @@ def signup():
             if not check_if_exsisit_email and not check_if_exsisit_username and not check_if_exsisit_password:
                 token = s.dumps({"Email": email, "Password": hashed_Value,
                                 "Username": username}, salt=os.environ['TOKEN_SALT'])
-                print(token)
+                print("--->> Token",token)
                 msg = Message(
                     'Hello', sender=os.environ['EMAIL'], recipients=[email])
                 link = url_for('confirm_email', token=token, _external=True)
@@ -111,7 +112,8 @@ def signup():
             else:
                 flash('User Already Exist')
                 return render_template('index.html', flag=1)
-        except:
+        except Exception as e:
+            print(e)
             flash('Use Diffrent Username and Password')
             return render_template('index.html', flag=1)
 
@@ -119,7 +121,10 @@ def signup():
 @app.route('/confirm_email/<token>')
 def confirm_email(token):
     try:
-        data = s.loads(token, os.environ['TOKEN_SALT'], max_age=60)
+        print("-->> Token Emai ",token)
+        Salt = os.environ["TOKEN_SALT"]
+        print("-->> Salt ",Salt)
+        data = s.loads(token, salt=Salt, max_age=60)
         conf = UserProfile(
             name=data["Username"], email=data["Email"], password=data["Password"])
         db.session.add(conf)
@@ -134,8 +139,6 @@ def confirm_email(token):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        global eml
-        global usnl
         usnl = request.form['usnl']
         psdl = request.form['psdl']
         eml = request.form['eml']
