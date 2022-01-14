@@ -236,7 +236,7 @@ def edit():
     date = request.form["date"]
     id = request.form["id"]
     print(text,category,money,date,(id))
-    edit_acc = Account.query.filter_by(aid=id).first()
+    edit_acc = Account.query.filter_by(aid=id,user_id=current_user.id).first()
     edit_acc.amount = int(money[1:])
     edit_acc.amounttype = text
     edit_acc.category = category
