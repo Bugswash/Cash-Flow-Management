@@ -359,9 +359,9 @@
                 <td id='D{{ datas.aid }}'>{{ datas.date }}</td>
                 {% if datas.amounttype == 'Expenses' %}
 
-                <td> <span class="badge bg-danger" id='M{{ datas.aid }}'>${{ datas.amount }}</span></td>
+                <td> <span class="fs-6 badge bg-danger" id='M{{ datas.aid }}'>-${{ datas.amount }}</span></td>
                 {% else %}
-                <td> <span class="badge bg-success" id='M{{ datas.aid }}'>${{ datas.amount }}</span></td>
+                <td> <span class="fs-6 badge bg-success" id='M{{ datas.aid }}'>+${{ datas.amount }}</span></td>
                 {% endif %}
                 <td>
                   <div class="row">
