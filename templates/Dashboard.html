@@ -296,17 +296,17 @@
             <tbody>
               {% for datas in data %}
               <tr>
-                <th scope="row"><a href="#">{{ datas.amounttype}}</a></th>
-                <td> {{ datas.category }}</td>
-                <td>{{ datas.date }}</td>
+                <td scope="row" id='P'>{{ datas.amounttype}}</td>
+                <td id='C'> {{ datas.category }}</td>
+                <td id='D'>{{ datas.date }}</td>
                 {% if datas.amounttype == 'Expenses' %}
 
-                <td> <span class="badge bg-danger">${{ datas.amount }}</span></td>
+                <td> <span class="badge bg-danger" id='M'>${{ datas.amount }}</span></td>
                 {% else %}
-                <td> <span class="badge bg-success">${{ datas.amount }}</span></td>
+                <td> <span class="badge bg-success" id='M'>${{ datas.amount }}</span></td>
                 {% endif %}
                 <td>
-                  <div class="col"> <button type="button" class="btn btn-outline-warning">Edit</button>
+                  <div class="col"> <button type="button" id='ed' class="btn btn-outline-warning ibtn-edit">Edit</button>
                     <button type="button" class="btn btn-outline-danger">Delete</button>
                   </div>
                 </td>
@@ -337,6 +337,7 @@
       class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
+  <script src="{{ url_for('static',filename='assets2/js/dashboard.js')}}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/apexcharts/apexcharts.min.js')}}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/chart.js/chart.min.js')}}"></script>
