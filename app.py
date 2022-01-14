@@ -220,9 +220,11 @@ def dashboard():
 def report():
     pie_data = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Expenses' and user_id = {current_user.id} group by category").all()
     db.session.commit()
+    pie_data_income = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Income' and user_id = {current_user.id} group by category").all()
+    db.session.commit()
     print("--->>>",pie_data)
     user = UserProfile.query.filter_by(id=current_user.id).first()
-    return render_template('report.html',user=user,pie_data=pie_data)
+    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income)
 
 @app.route('/item', methods=['GET', 'POST','DELETE'])
 @login_required

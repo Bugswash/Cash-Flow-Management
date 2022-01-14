@@ -209,36 +209,40 @@
         <div class="col-lg-6">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Bar Chart</h5>
+              <h5 class="card-title">Expenses Bar Chart</h5>
 
               <!-- Bar Chart -->
               <div id="barChart"></div>
 
               <script>
                 document.addEventListener("DOMContentLoaded", () => {
-                  new ApexCharts(document.querySelector("#barChart"), {
-                    series: [{
-                      data: [400, 430, 448, 470, 540, 580, 690, 1100, 1200, 1380]
-                    }],
-                    chart: {
-                      type: 'bar',
-                      height: 350
-                    },
-                    plotOptions: {
-                      bar: {
-                        borderRadius: 4,
-                        horizontal: true,
-                      }
-                    },
-                    dataLabels: {
-                      enabled: false
-                    },
-                    xaxis: {
-                      categories: ['South Korea', 'Canada', 'United Kingdom', 'Netherlands', 'Italy', 'France', 'Japan',
-                        'United States', 'China', 'Germany'
-                      ],
+                  data_amount = []
+                  data_label = []
+                  {% for pd in pie_data %}
+                  data_amount.push(parseInt({{ pd.am }}))
+                data_label.push("{{ pd.category }}")
+                {% endfor %}
+                new ApexCharts(document.querySelector("#barChart"), {
+                  series: [{
+                    data: data_amount
+                  }],
+                  chart: {
+                    type: 'bar',
+                    height: 350
+                  },
+                  plotOptions: {
+                    bar: {
+                      borderRadius: 4,
+                      horizontal: true,
                     }
-                  }).render();
+                  },
+                  dataLabels: {
+                    enabled: false
+                  },
+                  xaxis: {
+                    categories: data_label,
+                  }
+                }).render();
                 });
               </script>
               <!-- End Bar Chart -->
@@ -246,11 +250,10 @@
             </div>
           </div>
         </div>
-
         <div class="col-lg-6">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Pie Chart</h5>
+              <h5 class="card-title">Income Pie Chart</h5>
 
               <!-- Pie Chart -->
               <div id="pieChart"></div>
@@ -260,6 +263,42 @@
                   data_amount = []
                   data_label = []
                   {% for pd in pie_data %}
+                  data_amount.push(parseInt({{ pd.am }}))
+                data_label.push("{{ pd.category }}")
+                {% endfor %}
+                console.log(data_amount, data_label);
+                new ApexCharts(document.querySelector("#pieCharts"), {
+                  series: data_amount,
+                  chart: {
+                    height: 350,
+                    type: 'pie',
+                    toolbar: {
+                      show: true
+                    }
+                  },
+                  labels: data_label,
+                }).render();
+                });
+              </script>
+              <!-- End Pie Chart -->
+
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Expenses Pie Chart</h5>
+
+              <!-- Pie Chart -->
+              <div id="pieChart"></div>
+              <div id="pieCharts"></div>
+
+              <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                  data_amount = []
+                  data_label = []
+                  {% for pd in pie_data_income %}
                   data_amount.push(parseInt({{ pd.am }}))
                 data_label.push("{{ pd.category }}")
                 {% endfor %}
@@ -282,6 +321,8 @@
             </div>
           </div>
         </div>
+
+
         <div class="col-lg-6">
           <div class="card">
             <div class="card-body">
