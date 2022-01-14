@@ -227,5 +227,22 @@ def item():
         db.session.add(add_acc)
         db.session.commit()
         return redirect(url_for('dashboard'))
+@app.route('/edit',methods=['POST'])
+@login_required
+def edit():
+    text = request.form["text"]
+    category = request.form["category"]
+    money = request.form["money"]
+    date = request.form["date"]
+    id = request.form["id"]
+    print(text,category,money,date,(id))
+    edit_acc = Account.query.filter_by(aid=id).first()
+    edit_acc.amount = int(money[1:])
+    edit_acc.amounttype = text
+    edit_acc.category = category
+    edit_acc.date = date
+    db.session.add(edit_acc)
+    db.session.commit()
+    return "Here"
 if __name__ == '__main__':
     app.run(debug=True)

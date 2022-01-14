@@ -268,7 +268,7 @@
                   <div class="row mb-3">
                     <label for="inputDate" class="col-sm-2 col-form-label">Date</label>
                     <div class="col-sm-10">
-                      <input type="date" class="form-control" value=" " name="date">
+                      <input type="date" class="form-control" value="2000-05-02" name="date">
                     </div>
                   </div>
                   <div class="text-center">
@@ -295,18 +295,20 @@
             </thead>
             <tbody>
               {% for datas in data %}
+
               <tr>
-                <td scope="row" id='P'>{{ datas.amounttype}}</td>
-                <td id='C'> {{ datas.category }}</td>
-                <td id='D'>{{ datas.date }}</td>
+                <td scope="row" id='P{{ datas.aid }}'>{{ datas.amounttype}}</td>
+                <td id='C{{ datas.aid }}'> {{ datas.category }}</td>
+                <td id='D{{ datas.aid }}'>{{ datas.date }}</td>
                 {% if datas.amounttype == 'Expenses' %}
 
-                <td> <span class="badge bg-danger" id='M'>${{ datas.amount }}</span></td>
+                <td> <span class="badge bg-danger" id='M{{ datas.aid }}'>${{ datas.amount }}</span></td>
                 {% else %}
-                <td> <span class="badge bg-success" id='M'>${{ datas.amount }}</span></td>
+                <td> <span class="badge bg-success" id='M{{ datas.aid }}'>${{ datas.amount }}</span></td>
                 {% endif %}
                 <td>
-                  <div class="col"> <button type="button" id='ed' class="btn btn-outline-warning ibtn-edit">Edit</button>
+                  <div class="col"> <button type="button" id='ed{{ datas.aid }}'
+                      class="btn btn-outline-warning ibtn-edit" onclick="edit({{ datas.aid }})">Edit</button>
                     <button type="button" class="btn btn-outline-danger">Delete</button>
                   </div>
                 </td>
@@ -337,7 +339,7 @@
       class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <script src="{{ url_for('static',filename='assets2/js/dashboard.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/js/dashboard.js')}}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/apexcharts/apexcharts.min.js')}}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/chart.js/chart.min.js')}}"></script>
