@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, render_template, request, url_for, flash, session
+from flask import Flask, render_template, request, url_for, flash, session,redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 import os
@@ -204,13 +204,28 @@ def profile():
 @login_required
 def dashboard():
     user = UserProfile.query.filter_by(id=current_user.id).first()
-
+    my_data = list(Account.query.filter_by(user_id=current_user.id).all())
+    print("--->>>",my_data)
     print("--->>>",session.get('visits'))
-    return render_template('Dashboard.html',user=user)
+    return render_template('Dashboard.html',user=user,data= my_data)
 
 @app.route('/report')
 @login_required
 def report():
-    return render_template('report.html')
+    user = UserProfile.query.filter_by(id=current_user.id).first()
+    return render_template('report.html',user=user)
+
+@app.route('/item', methods=['GET', 'POST'])
+@login_required
+def item():
+    if request.method == 'POST':
+        gridRadios = request.form["gridRadios"]
+        category = request.form["category"]
+        amount = request.form["amount"]
+        date = request.form["date"]
+        add_acc = Account(amount = amount, amounttype = gridRadios,category= category,date = date,user_id=current_user.id)
+        db.session.add(add_acc)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
 if __name__ == '__main__':
     app.run(debug=True)
