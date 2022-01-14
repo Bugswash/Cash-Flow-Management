@@ -224,9 +224,13 @@ def report():
     db.session.commit()
     area_data_expenses = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Expenses' and user_id = {current_user.id} group by date")
     db.session.commit()
+    area_data_expenses_2 = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Expenses' and user_id = {current_user.id} group by date")
+    db.session.commit()
+    area_data_income = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Income' and user_id = {current_user.id} group by date")
+    db.session.commit()
     print("--->>>",pie_data)
     user = UserProfile.query.filter_by(id=current_user.id).first()
-    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses)
+    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2)
 
 @app.route('/item', methods=['GET', 'POST','DELETE'])
 @login_required
