@@ -45,7 +45,7 @@
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
+      <a href="/dashboard" class="logo d-flex align-items-center">
         <img src="{{ url_for('static',filename='assets/img/logo.png')}}" alt="">
         <span class="d-none d-lg-block">Cash Flow</span>
       </a>
@@ -112,7 +112,7 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="/">
+        <a class="nav-link collapsed" href="/dashboard">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -142,12 +142,12 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Blank Page</h1>
+      <h1>Report Page</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.html">Home</a></li>
           <li class="breadcrumb-item">Pages</li>
-          <li class="breadcrumb-item active">Blank</li>
+          <li class="breadcrumb-item active">Report</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -257,17 +257,24 @@
 
               <script>
                 document.addEventListener("DOMContentLoaded", () => {
-                  new ApexCharts(document.querySelector("#pieChart"), {
-                    series: [44, 55, 13, 43, 22],
-                    chart: {
-                      height: 350,
-                      type: 'pie',
-                      toolbar: {
-                        show: true
-                      }
-                    },
-                    labels: ['Team A', 'Team B', 'Team C', 'Team D', 'Team E']
-                  }).render();
+                  data_amount = []
+                  data_label = []
+                  {% for pd in pie_data %}
+                  data_amount.push(parseInt({{ pd.am }}))
+                data_label.push("{{ pd.category }}")
+                {% endfor %}
+                console.log(data_amount, data_label);
+                new ApexCharts(document.querySelector("#pieChart"), {
+                  series: data_amount,
+                  chart: {
+                    height: 350,
+                    type: 'pie',
+                    toolbar: {
+                      show: true
+                    }
+                  },
+                  labels: data_label,
+                }).render();
                 });
               </script>
               <!-- End Pie Chart -->

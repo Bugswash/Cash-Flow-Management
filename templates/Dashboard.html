@@ -45,7 +45,7 @@
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center">
+      <a href="/dashboard" class="logo d-flex align-items-center">
         <img src="{{ url_for('static',filename='assets/img/logo.png')}}" alt="">
         <span class="d-none d-lg-block">Cash Flow</span>
       </a>
@@ -112,7 +112,7 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="/">
+        <a class="nav-link " href="/dashboard">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -145,7 +145,7 @@
       <h1>Dashboard</h1>
       <nav>
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
           <li class="breadcrumb-item active">Dashboard</li>
         </ol>
       </nav>
@@ -223,17 +223,13 @@
           </div>
 
         </div><!-- End Customers Card -->
-
-        <!-- Left side columns -->
         <div class="col-lg-12">
           <div class="row">
 
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Add Data</h5>
-
-                <!-- Horizontal Form -->
-                <form action="/item" method="post">
+                <h5 class="card-title">Add Category</h5>
+                <form action="/addcategory" method="post">
                   <fieldset class="row mb-3">
                     <legend class="col-form-label col-sm-2 pt-0">Amount Type</legend>
                     <div class="col-sm-10">
@@ -257,6 +253,67 @@
                     <div class="col-sm-10">
                       <input type="text" name="category" class="form-control" id="inputText" placeholder="Eg. Food">
 
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">ADD</button>
+                  </div>
+              </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Left side columns -->
+        <div class="col-lg-12">
+          <div class="row">
+
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Add Data</h5>
+
+                <!-- Horizontal Form -->
+                <form action="/item" method="post" name="itemform">
+                  <fieldset class="row mb-3">
+                    <legend class="col-form-label col-sm-2 pt-0">Amount Type</legend>
+                    <div class="col-sm-10">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Expenses"
+                          onclick="handleClick(this);" checked>
+                        <label class="form-check-label" for="gridRadios1">
+                          Expenses
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2"
+                          onclick="handleClick(this);" value="Income">
+                        <label class="form-check-label" for="gridRadios2">
+                          Income
+                        </label>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <div class="row mb-3">
+                    <!-- <label class="col-sm-2 col-form-label">Category</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="category" class="form-control" id="inputText" placeholder="Eg. Food">
+
+                    </div> -->
+                    <label class="col-sm-2 col-form-label">Select</label>
+                    <div class="col-sm-10">
+                      <select class="form-select" aria-label="Default select example" name="category">
+                        {% for cats in category %}
+                        {% if cats.amounttype=="Income" %}
+
+                        <option value="{{ cats.category }}" class="{{ cats.amounttype }}" style="display: none;">{{
+                          cats.category}}</option>
+                        {% else %}
+                        <option value="{{ cats.category }}" class="{{ cats.amounttype }}">{{
+                          cats.category}}</option>
+
+                        {% endif %}
+                        {% endfor %}
+                      </select>
                     </div>
                   </div>
                   <div class="row mb-3">
@@ -307,10 +364,17 @@
                 <td> <span class="badge bg-success" id='M{{ datas.aid }}'>${{ datas.amount }}</span></td>
                 {% endif %}
                 <td>
-                  <div class="col"> <button type="button" id='ed{{ datas.aid }}'
-                      class="btn btn-outline-warning ibtn-edit" onclick="edit({{ datas.aid }})">Edit</button>
-                    <button type="button" class="btn btn-outline-danger">Delete</button>
-                  </div>
+                  <div class="row">
+                    <div class="col-2 pe-5">
+                      <button type="button" id='ed{{ datas.aid }}' class="btn btn-outline-warning ibtn-edit"
+                        onclick="edit({{ datas.aid }})">Edit</button>
+                    </div>
+                    <div class="col-2 pe-5">
+
+                      <button type="button" class="btn btn-outline-danger"
+                        onclick="deletes({{ datas.aid }})">Delete</button>
+                    </div>
+
                 </td>
               </tr>
               {% endfor %}
@@ -324,6 +388,55 @@
 
   </main><!-- End #main -->
   <script>
+
+    var currentValue = 0;
+    function handleClick(myRadio) {
+      // alert('Old value: ' + currentValue);
+      // alert('New value: ' + myRadio.value);
+      var get_len = document.querySelectorAll(".Expenses").length;
+      console.log(get_len);
+      if (myRadio.value === "Expenses") {
+        var get_len = document.querySelectorAll(".Income").length;
+        for (let i = 0; i < get_len; i++) {
+          document.getElementsByClassName("Income")[i].style.display = "none";
+        }
+        var get_len = document.querySelectorAll(".Expenses").length;
+        for (let i = 0; i < get_len; i++) {
+          if (i == 0) {
+
+            document.getElementsByClassName("Expenses")[i].style.display = "block";
+            document.getElementsByClassName("Expenses")[i].selected = true
+
+
+          }
+          else {
+            document.getElementsByClassName("Expenses")[i].style.display = "block";
+          }
+        }
+        console.log("-->>" + get_len);
+      } else {
+        var get_len = document.querySelectorAll(".Expenses").length;
+        for (let i = 0; i < get_len; i++) {
+          document.getElementsByClassName("Expenses")[i].style.display = "none";
+        }
+        var get_len = document.querySelectorAll(".Income").length;
+        for (let i = 0; i < get_len; i++) {
+          if (i == 0) {
+
+            document.getElementsByClassName("Income")[i].style.display = "block";
+            document.getElementsByClassName("Income")[i].selected = true
+
+          }
+          else {
+
+            document.getElementsByClassName("Income")[i].style.display = "block";
+          }
+        }
+        console.log("-->>" + get_len);
+      }
+      currentValue = myRadio.value;
+      document.getElementById("inputText").value = "";
+    }
     document.getElementById("remaining").innerHTML = parseInt("{{ user.salary }}") - parseInt("{{ user.saving }}");
   </script>
   <!-- ======= Footer ======= -->

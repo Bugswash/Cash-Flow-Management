@@ -95,3 +95,19 @@ function change() {
     }
   }
 }
+function deletes(id) {
+  $.ajax({
+    url: '/item',
+    type: 'DELETE',
+    data: {
+      id: id,
+    },
+    success: function (data) {
+      console.log(data);
+      location.reload();
+    },
+    error: function (data) {
+      console.log(data);
+    }
+  });
+}

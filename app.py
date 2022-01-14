@@ -68,7 +68,12 @@ class Account(db.Model):
     date = db.Column(db.Date, default=datetime.now())
     user_id = db.Column(db.Integer, db.ForeignKey('userprofile.id'))
 
-
+class Category(db.Model):
+    __tablename__ = 'category'
+    cid = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(120), nullable=False, unique=True)
+    amounttype = db.Column(db.String(120), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('userprofile.id'))
 @login_manager.user_loader
 def load_user(user_id):
     return UserProfile.query.get(int(user_id))
@@ -162,7 +167,7 @@ def login():
                 user = UserProfile.query.filter_by(
                     id=session.get('visits')).first()
                 print("--->>>",user.id)
-                return render_template('Dashboard.html', user=user)
+                return redirect(url_for('dashboard'))
             else:
                 flash('Password Is Incorrect')
                 return render_template('index.html', flag=2)
@@ -205,17 +210,21 @@ def profile():
 def dashboard():
     user = UserProfile.query.filter_by(id=current_user.id).first()
     my_data = list(Account.query.filter_by(user_id=current_user.id).all())
+    my_catgeory = Category.query.filter_by(user_id=current_user.id).all()
     print("--->>>",my_data)
     print("--->>>",session.get('visits'))
-    return render_template('Dashboard.html',user=user,data= my_data)
+    return render_template('Dashboard.html',user=user,data= my_data,category=my_catgeory)
 
 @app.route('/report')
 @login_required
 def report():
+    pie_data = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Expenses' and user_id = {current_user.id} group by category").all()
+    db.session.commit()
+    print("--->>>",pie_data)
     user = UserProfile.query.filter_by(id=current_user.id).first()
-    return render_template('report.html',user=user)
+    return render_template('report.html',user=user,pie_data=pie_data)
 
-@app.route('/item', methods=['GET', 'POST'])
+@app.route('/item', methods=['GET', 'POST','DELETE'])
 @login_required
 def item():
     if request.method == 'POST':
@@ -227,6 +236,12 @@ def item():
         db.session.add(add_acc)
         db.session.commit()
         return redirect(url_for('dashboard'))
+    if request.method == 'DELETE':
+        print("--->>>",request.form["id"])
+        acc = Account.query.filter_by(aid=request.form["id"],user_id=current_user.id).first()
+        db.session.delete(acc)
+        db.session.commit()
+        return "Done"
 @app.route('/edit',methods=['POST'])
 @login_required
 def edit():
@@ -244,5 +259,15 @@ def edit():
     db.session.add(edit_acc)
     db.session.commit()
     return "Here"
+@app.route('/addcategory',methods=['POST'])
+@login_required
+def addcategory():
+    category = request.form["category"]
+    gridRadios = request.form["gridRadios"]
+    print(category)
+    add_cat = Category(category=category,amounttype= gridRadios,user_id=current_user.id)
+    db.session.add(add_cat)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
 if __name__ == '__main__':
     app.run(debug=True)
