@@ -18,7 +18,7 @@ function edit() {
         var input = $(`<td><input type="text" class="edit text form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg" id ='inp' value="${t}" /></td>`)
         var input1 = $(`<td><input type="text" class="edit text form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg" id="inputText1" value="${category}" /></td>`)
         var input2 = $(`<td><input type="text" class="edit text form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg" id="inputText2" value="${money}" /></td>`)
-        $('#' + 'D').replaceWith(`<td><input type="date" class="form-control" id='Date' value="${date_t1}"></input></td>`)
+        $('#' + 'D').replaceWith(`<input type="date" class="form-control" id='Date' value="${date_t1}"></input>`)
         $('#' + "P").replaceWith(input);
         $('#' + "C").replaceWith(input1);
         $('#' + "M").replaceWith(input2);
