@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime,date
+from this import d
 from flask import Flask, render_template, request, url_for, flash, session,redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
@@ -66,6 +67,9 @@ class Account(db.Model):
     amounttype = db.Column(db.String(120), nullable=False)
     category = db.Column(db.String(120), nullable=False)
     date = db.Column(db.Date, default=datetime.now())
+    day = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('userprofile.id'))
 
 class Category(db.Model):
@@ -208,19 +212,25 @@ def profile():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    today_date = date.today()
     user = UserProfile.query.filter_by(id=current_user.id).first()
     my_data = list(Account.query.filter_by(user_id=current_user.id).all())
     my_catgeory = Category.query.filter_by(user_id=current_user.id).all()
-    print("--->>>",my_data)
+    my_expense = db.session.execute(f"select SUM(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id}").all()
+    my_income = db.session.execute(f"select SUM(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id}").all()
+    this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+    this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+    print("--->>>",my_expense,my_income,this_month_exp,this_month_income)
     print("--->>>",session.get('visits'))
-    return render_template('Dashboard.html',user=user,data= my_data,category=my_catgeory)
+    return render_template('Dashboard.html',user=user,data= my_data,category=my_catgeory,expenses=this_month_exp,income=this_month_income)
 
 @app.route('/report')
 @login_required
 def report():
-    pie_data = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Expenses' and user_id = {current_user.id} group by category").all()
+    today_date = date.today()
+    pie_data = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year} group by category").all()
     db.session.commit()
-    pie_data_income = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Income' and user_id = {current_user.id} group by category").all()
+    pie_data_income = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Income' and user_id = {current_user.id}  and month = {today_date.month} and year = {today_date.year} group by category").all()
     db.session.commit()
     area_data_expenses = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Expenses' and user_id = {current_user.id} group by date")
     db.session.commit()
@@ -230,7 +240,11 @@ def report():
     db.session.commit()
     print("--->>>",pie_data)
     user = UserProfile.query.filter_by(id=current_user.id).first()
-    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2)
+    column_chart_income = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Income' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
+    column_chart_expenses = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Expenses' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
+    db.session.commit()
+    print("--->>> cc ",column_chart_income,column_chart_expenses)
+    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2,column_chart_income=column_chart_income,column_chart_expenses=column_chart_expenses)
 
 @app.route('/item', methods=['GET', 'POST','DELETE'])
 @login_required
@@ -240,7 +254,9 @@ def item():
         category = request.form["category"]
         amount = request.form["amount"]
         date = request.form["date"]
-        add_acc = Account(amount = amount, amounttype = gridRadios,category= category,date = date,user_id=current_user.id)
+        new_date=datetime.strptime(date, "%Y-%m-%d")
+        print("--->>> ",date,new_date.month)
+        add_acc = Account(amount = amount, amounttype = gridRadios,category= category,date = date,user_id=current_user.id,day=new_date.day,month=new_date.month,year=new_date.year)
         db.session.add(add_acc)
         db.session.commit()
         return redirect(url_for('dashboard'))
@@ -258,12 +274,16 @@ def edit():
     money = request.form["money"]
     date = request.form["date"]
     id = request.form["id"]
+    new_date=datetime.strptime(date, "%Y-%m-%d")
     print(text,category,money,date,(id))
     edit_acc = Account.query.filter_by(aid=id,user_id=current_user.id).first()
-    edit_acc.amount = int(money[1:])
+    edit_acc.amount = int(money[2:])
     edit_acc.amounttype = text
     edit_acc.category = category
     edit_acc.date = date
+    edit_acc.day = new_date.day
+    edit_acc.month = new_date.month
+    edit_acc.year = new_date.year
     db.session.add(edit_acc)
     db.session.commit()
     return "Here"
