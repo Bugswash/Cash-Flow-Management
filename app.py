@@ -368,5 +368,48 @@ def addcategory():
     except Exception as e:
         print(e)
         return "Some Error occurred"
+@app.route('/reset_link',methods=['GET','POST'])
+def reset_link():
+    if request.method == 'POST':
+        reset_email = request.form['emailforget']
+        cheking = UserProfile.query.filter_by(email=reset_email).first()
+        if not cheking:
+            return "User Doesn't Exist"
+        reset_token = s.dumps({"Email":reset_email},salt=os.environ['RESET_PASSWORD_SALT'])
+        print(reset_token)
+        msg = Message('Hello',sender =os.environ['EMAIL'],recipients = [reset_email])
+        link = url_for('reset_password',token=reset_token,_external=True)
+        msg.body = 'Your Token Is {}'.format(link)
+        mail.send(msg)
+        return "Check Mail For Reset Password"
+@app.route('/reset_password/<token>',methods=['GET','POST'])
+def reset_password(token):
+    try:
+        data = s.loads(token , salt=os.environ['RESET_PASSWORD_SALT'],max_age=60)
+        if request.method == 'GET':
+            user_profile = UserProfile.query.filter_by(email=data["Email"]).first()
+            return render_template('forget-password.html',token=token,user=user_profile)
+        # conf = User_Basic_infos(username=data["Username"],email=data["Email"],password=data["Password"],flags=True)
+        # db.session.add(conf)
+        # db.session.commit()
+        if request.method == 'POST':
+            reset_password=request.form["reset_password"]
+            reset_password2 = request.form["reset_password2"]
+            if reset_password != reset_password2:
+                return "Password Doesn't Match"
+            print(reset_password)
+            hashed_Value = generate_password_hash(reset_password)
+            print(hashed_Value)
+            print(data["Email"])
+            user_profile = UserProfile.query.filter_by(email=data["Email"]).first()
+            user_profile.password = hashed_Value
+            db.session.add(user_profile)
+            db.session.commit()
+            return redirect('/')
+    except SignatureExpired:
+        return "The Token Is Expired"
+    except BadSignature:
+        return "The token is invalid"
+    return "This email worked"
 if __name__ == '__main__':
     app.run(debug=True)

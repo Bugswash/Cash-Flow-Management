@@ -166,171 +166,241 @@
     </div><!-- End Page Title -->
 
     <section class="section dashboard">
+      <div class="row">
+        <!-- Sales Card -->
+        <div class="col-xxl-4 col-md-6">
+          <div class="card info-card sales-card">
 
-      <div class="col-lg-12">
-        <div class="row">
-
-          <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Add Category</h5>
-              <form action="/addcategory" method="post">
-                <fieldset class="row mb-3">
-                  <legend class="col-form-label col-sm-2 pt-0">Amount Type</legend>
-                  <div class="col-sm-10">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Expenses"
-                        checked>
-                      <label class="form-check-label" for="gridRadios1">
-                        Expenses
-                      </label>
-                    </div>
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2" value="Income">
-                      <label class="form-check-label" for="gridRadios2">
-                        Income
-                      </label>
-                    </div>
-                  </div>
-                </fieldset>
-                <div class="row mb-3">
-                  <label class="col-sm-2 col-form-label">Category</label>
-                  <div class="col-sm-10">
-                    <input type="text" name="category" class="form-control" id="inputText" placeholder="Eg. Food">
+              <h5 class="card-title">Salary</h5>
 
-                  </div>
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                  <i class="bi bi-cart"></i>
                 </div>
-                <div class="text-center">
-                  <button type="submit" class="btn btn-primary">ADD</button>
+                <div class="ps-3">
+                  <h6>{{ user.salary }}</h6>
+                  <span class="text-success small pt-1 fw-bold">12%</span> <span
+                    class="text-muted small pt-2 ps-1">increase</span>
+
                 </div>
+              </div>
             </div>
-            </form>
+
+          </div>
+        </div><!-- End Sales Card -->
+
+        <!-- Revenue Card -->
+        <div class="col-xxl-4 col-md-6">
+          <div class="card info-card revenue-card">
+
+            <div class="card-body">
+              <h5 class="card-title">Saving</h5>
+
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                  <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="ps-3">
+                  <h6>{{ user.saving }}</h6>
+                  <span class="text-success small pt-1 fw-bold">8%</span> <span
+                    class="text-muted small pt-2 ps-1">increase</span>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div><!-- End Revenue Card -->
+
+        <!-- Customers Card -->
+        <div class="col-xxl-4 col-xl-12">
+
+          <div class="card info-card customers-card">
+
+            <div class="card-body">
+              <h5 class="card-title">Current Budget</h5>
+
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                  <i class="bi bi-people"></i>
+                </div>
+                <div class="ps-3">
+                  <h6 id="remaining">1244</h6>
+                  <span class="text-danger small pt-1 fw-bold">12%</span> <span
+                    class="text-muted small pt-2 ps-1">decrease</span>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div><!-- End Customers Card -->
+        <div class="col-lg-12">
+          <div class="row">
+
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Add Category</h5>
+                <form action="/addcategory" method="post">
+                  <fieldset class="row mb-3">
+                    <legend class="col-form-label col-sm-2 pt-0">Amount Type</legend>
+                    <div class="col-sm-10">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Expenses"
+                          checked>
+                        <label class="form-check-label" for="gridRadios1">
+                          Expenses
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2" value="Income">
+                        <label class="form-check-label" for="gridRadios2">
+                          Income
+                        </label>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">Category</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="category" class="form-control" id="inputText" placeholder="Eg. Food">
+
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">ADD</button>
+                  </div>
+              </div>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Left side columns -->
-      <div class="col-lg-12">
-        <div class="row">
+        <!-- Left side columns -->
+        <div class="col-lg-12">
+          <div class="row">
 
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Add Data</h5>
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Add Data</h5>
 
-              <!-- Horizontal Form -->
-              <form action="/item" method="post" name="itemform">
-                <fieldset class="row mb-3">
-                  <legend class="col-form-label col-sm-2 pt-0">Amount Type</legend>
-                  <div class="col-sm-10">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Expenses"
-                        onclick="handleClick(this);" checked>
-                      <label class="form-check-label" for="gridRadios1">
-                        Expenses
-                      </label>
+                <!-- Horizontal Form -->
+                <form action="/item" method="post" name="itemform">
+                  <fieldset class="row mb-3">
+                    <legend class="col-form-label col-sm-2 pt-0">Amount Type</legend>
+                    <div class="col-sm-10">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Expenses"
+                          onclick="handleClick(this);" checked>
+                        <label class="form-check-label" for="gridRadios1">
+                          Expenses
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2"
+                          onclick="handleClick(this);" value="Income">
+                        <label class="form-check-label" for="gridRadios2">
+                          Income
+                        </label>
+                      </div>
                     </div>
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2"
-                        onclick="handleClick(this);" value="Income">
-                      <label class="form-check-label" for="gridRadios2">
-                        Income
-                      </label>
-                    </div>
-                  </div>
-                </fieldset>
-                <div class="row mb-3">
-                  <!-- <label class="col-sm-2 col-form-label">Category</label>
+                  </fieldset>
+                  <div class="row mb-3">
+                    <!-- <label class="col-sm-2 col-form-label">Category</label>
                     <div class="col-sm-10">
                       <input type="text" name="category" class="form-control" id="inputText" placeholder="Eg. Food">
 
                     </div> -->
-                  <label class="col-sm-2 col-form-label">Select</label>
-                  <div class="col-sm-10">
-                    <select class="form-select" aria-label="Default select example" name="category">
-                      {% for cats in category %}
-                      {% if cats.amounttype=="Income" %}
+                    <label class="col-sm-2 col-form-label">Select</label>
+                    <div class="col-sm-10">
+                      <select class="form-select" aria-label="Default select example" name="category">
+                        {% for cats in category %}
+                        {% if cats.amounttype=="Income" %}
 
-                      <option value="{{ cats.category }}" class="{{ cats.amounttype }}" style="display: none;">{{
-                        cats.category}}</option>
-                      {% else %}
-                      <option value="{{ cats.category }}" class="{{ cats.amounttype }}">{{
-                        cats.category}}</option>
+                        <option value="{{ cats.category }}" class="{{ cats.amounttype }}" style="display: none;">{{
+                          cats.category}}</option>
+                        {% else %}
+                        <option value="{{ cats.category }}" class="{{ cats.amounttype }}">{{
+                          cats.category}}</option>
 
-                      {% endif %}
-                      {% endfor %}
-                    </select>
+                        {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
                   </div>
-                </div>
-                <div class="row mb-3">
-                  <label for="inputEmail3" class="col-sm-2 col-form-label">Amount</label>
-                  <div class="col-sm-10">
-                    <input type="text" class="form-control" id="inputText" name="amount">
+                  <div class="row mb-3">
+                    <label for="inputEmail3" class="col-sm-2 col-form-label">Amount</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="inputText" name="amount">
+                    </div>
                   </div>
-                </div>
-                <div class="row mb-3">
-                  <label for="inputDate" class="col-sm-2 col-form-label">Date</label>
-                  <div class="col-sm-10">
-                    <input id="date_input" type="date" class="form-control" value="" name="date">
+                  <div class="row mb-3">
+                    <label for="inputDate" class="col-sm-2 col-form-label">Date</label>
+                    <div class="col-sm-10">
+                      <input id="date_input" type="date" class="form-control" value="" name="date">
+                    </div>
                   </div>
-                </div>
-                <div class="text-center">
-                  <button type="submit" class="btn btn-primary">ADD</button>
-                </div>
-              </form><!-- End Horizontal Form -->
-              <script>
-                var todayDate = new Date().toISOString().slice(0, 10);
-                document.getElementById("date_input").value = todayDate;
-              </script>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">ADD</button>
+                  </div>
+                </form><!-- End Horizontal Form -->
+                <script>
+                  var todayDate = new Date().toISOString().slice(0, 10);
+                  document.getElementById("date_input").value = todayDate;
+                </script>
+              </div>
             </div>
+            <!-- Revenue Card -->
           </div>
-          <!-- Revenue Card -->
-        </div>
-      </div><!-- End Left side columns -->
-      <div class="card-body">
-        <h5 class="card-title">Recenet Data</h5>
-        <table class="table table-borderless datatable">
-          <thead>
-            <tr>
-              <th scope="col">Amount Type</th>
-              <th scope="col">Category</th>
-              <th scope="col">Date</th>
-              <th scope="col">Price</th>
-              <th scope="col">Edit/Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for datas in data %}
+        </div><!-- End Left side columns -->
+        <div class="card-body">
+          <h5 class="card-title">Recenet Data</h5>
+          <table class="table table-borderless datatable">
+            <thead>
+              <tr>
+                <th scope="col">Amount Type</th>
+                <th scope="col">Category</th>
+                <th scope="col">Date</th>
+                <th scope="col">Price</th>
+                <th scope="col">Edit/Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for datas in data %}
 
-            <tr>
-              <td scope="row" id='P{{ datas.aid }}'>{{ datas.amounttype}}</td>
-              <td id='C{{ datas.aid }}'> {{ datas.category }}</td>
-              <td id='D{{ datas.aid }}'>{{ datas.date }}</td>
-              {% if datas.amounttype == 'Expenses' %}
+              <tr>
+                <td scope="row" id='P{{ datas.aid }}'>{{ datas.amounttype}}</td>
+                <td id='C{{ datas.aid }}'> {{ datas.category }}</td>
+                <td id='D{{ datas.aid }}'>{{ datas.date }}</td>
+                {% if datas.amounttype == 'Expenses' %}
 
-              <td> <span class="fs-6 badge bg-danger" id='M{{ datas.aid }}'>-${{ datas.amount }}</span></td>
-              {% else %}
-              <td> <span class="fs-6 badge bg-success" id='M{{ datas.aid }}'>+${{ datas.amount }}</span></td>
-              {% endif %}
-              <td>
-                <div class="row">
-                  <div class="col-2 pe-5">
-                    <button type="button" id='ed{{ datas.aid }}' class="btn btn-outline-warning ibtn-edit"
-                      onclick="edit({{ datas.aid }})">Edit</button>
-                  </div>
-                  <div class="col-2 pe-5">
+                <td> <span class="fs-6 badge bg-danger" id='M{{ datas.aid }}'>-${{ datas.amount }}</span></td>
+                {% else %}
+                <td> <span class="fs-6 badge bg-success" id='M{{ datas.aid }}'>+${{ datas.amount }}</span></td>
+                {% endif %}
+                <td>
+                  <div class="row">
+                    <div class="col-2 pe-5">
+                      <button type="button" id='ed{{ datas.aid }}' class="btn btn-outline-warning ibtn-edit"
+                        onclick="edit({{ datas.aid }})">Edit</button>
+                    </div>
+                    <div class="col-2 pe-5">
 
-                    <button type="button" class="btn btn-outline-danger"
-                      onclick="deletes({{ datas.aid }})">Delete</button>
-                  </div>
+                      <button type="button" class="btn btn-outline-danger"
+                        onclick="deletes({{ datas.aid }})">Delete</button>
+                    </div>
 
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
 
-        <div class="col-lg-6">
+          <div class="col-lg-6">
 
-        </div>
+          </div>
     </section>
 
   </main><!-- End #main -->
@@ -384,7 +454,7 @@
       currentValue = myRadio.value;
       document.getElementById("inputText").value = "";
     }
-    // document.getElementById("remaining").innerHTML = parseInt("{{ user.salary }}") - parseInt("{{ user.saving }}");
+    document.getElementById("remaining").innerHTML = parseInt("{{ user.salary }}") - parseInt("{{ user.saving }}");
   </script>
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
