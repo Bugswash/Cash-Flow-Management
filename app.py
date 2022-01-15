@@ -1,7 +1,7 @@
 from datetime import datetime,date
-from this import d
 from flask import Flask, render_template, request, url_for, flash, session,redirect
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import exc
 from flask_mail import Mail, Message
 import os
 import psycopg2
@@ -197,16 +197,28 @@ def profile():
         user = UserProfile.query.filter_by(id=current_user.id).first()
         return render_template('profile.html',user=user)
     if request.method == 'POST':
-        imgsrc = request.form["imgsrc"]
-        salary = request.form["salary"]
-        saving = request.form["saving"]
-        print(imgsrc,salary,saving)
-        user = UserProfile.query.filter_by(id=current_user.id).first()
-        user.imgstr = imgsrc
-        user.salary = salary
-        user.saving = saving
-        db.session.add(user)
-        db.session.commit()
+        try:
+            imgsrc = request.form["imgsrc"]
+            salary = request.form["salary"]
+            saving = request.form["saving"]
+            usernmae = request.form["usernmae"]
+            print(imgsrc,salary,saving)
+            user = UserProfile.query.filter_by(id=current_user.id).first()
+            user.imgstr = imgsrc
+            user.salary = salary
+            user.saving = saving
+            user.name = usernmae
+            db.session.add(user)
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            flash('Use Different Username')
+            db.session.rollback()
+            db.session.commit()
+        except Exception as e:
+            print(e)
+            flash('Use Different Username')
+            db.session.rollback()
+            db.session.commit()
         return render_template('profile.html',user=user)
 
 @app.route('/dashboard')
@@ -222,6 +234,7 @@ def dashboard():
     this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
     print("--->>>",my_expense,my_income,this_month_exp,this_month_income)
     print("--->>>",session.get('visits'))
+    
     return render_template('Dashboard.html',user=user,data= my_data,category=my_catgeory,expenses=this_month_exp,income=this_month_income)
 
 @app.route('/report')
@@ -242,23 +255,46 @@ def report():
     user = UserProfile.query.filter_by(id=current_user.id).first()
     column_chart_income = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Income' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
     column_chart_expenses = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Expenses' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
+    user = UserProfile.query.filter_by(id=current_user.id).first()
+    this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+    this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+    print("--->>>",this_month_exp,this_month_income)
+
     db.session.commit()
     print("--->>> cc ",column_chart_income,column_chart_expenses)
-    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2,column_chart_income=column_chart_income,column_chart_expenses=column_chart_expenses)
+    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2,column_chart_income=column_chart_income,column_chart_expenses=column_chart_expenses,expenses=this_month_exp,income=this_month_income)
 
 @app.route('/item', methods=['GET', 'POST','DELETE'])
 @login_required
 def item():
     if request.method == 'POST':
+        # global data
+        today_date = date.today()
         gridRadios = request.form["gridRadios"]
         category = request.form["category"]
         amount = request.form["amount"]
-        date = request.form["date"]
-        new_date=datetime.strptime(date, "%Y-%m-%d")
-        print("--->>> ",date,new_date.month)
-        add_acc = Account(amount = amount, amounttype = gridRadios,category= category,date = date,user_id=current_user.id,day=new_date.day,month=new_date.month,year=new_date.year)
+        dates = request.form["date"]
+        new_date=datetime.strptime(dates, "%Y-%m-%d")
+        print("--->>> ",dates,new_date.month)
+        add_acc = Account(amount = amount, amounttype = gridRadios,category= category,date = dates,user_id=current_user.id,day=new_date.day,month=new_date.month,year=new_date.year)
+        is_add_befor=db.session.execute(f"SELECT COUNT(category) as ct FROM account WHERE category = '{category}' and user_id = {current_user.id} and amounttype = 'Expenses' and day = {new_date.day} and month={new_date.month} and year = {new_date.year}").all()
         db.session.add(add_acc)
         db.session.commit()
+        usese = UserProfile.query.filter_by(id=current_user.id).first()
+        this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+        this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+        calculate_budget = usese.salary - usese.saving - this_month_exp[0].ex + this_month_income[0].inc
+        print("--->>>",calculate_budget)
+        print("--->>>",this_month_exp,this_month_income)
+        print("--->>>",is_add_befor)
+        if calculate_budget <= 1000 and  calculate_budget >= 1:
+            flash("You are in danger of going over your budget")
+            return redirect(url_for('dashboard'))
+        elif calculate_budget <= 0:
+            flash("Your Budget is Over")
+            return redirect(url_for('dashboard'))
+        if int(is_add_befor[0].ct) >=1:
+            flash('You Are Investing This Again')
         return redirect(url_for('dashboard'))
     if request.method == 'DELETE':
         print("--->>>",request.form["id"])
