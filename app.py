@@ -11,21 +11,21 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_login import LoginManager, UserMixin, login_manager, logout_user, current_user, AnonymousUserMixin, login_user
 from flask_login.utils import login_required
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
+try:
+    dotenv_path = join(dirname(__file__), '.env')
+    load_dotenv(dotenv_path)
+except:
+    print("No .env file found Its Not Dev Mode")
 app = Flask(__name__)
 mail = Mail(app)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = os.environ['EMAIL']
 app.config['MAIL_PASSWORD'] = os.environ['PASSWORD']
-# app.config['MAIL_USERNAME']=''
-# app.config['MAIL_PASSWORD']=''
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 s = URLSafeTimedSerializer(os.environ['SALT'])
-# s = URLSafeTimedSerializer('khdfgsdhfgdsf')
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:test123@localhost/bugswash'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -83,13 +83,9 @@ def load_user(user_id):
     return UserProfile.query.get(int(user_id))
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
-    if request.method == 'POST':
-        return 'POST'
-    if request.method == 'GET':
-        user = "John"
-        return render_template('index.html', user=user)
+    return render_template('index.html')
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -193,9 +189,13 @@ def logout():
 @login_required
 def profile():
     if request.method == 'GET':
-        print("current_user",current_user.id)
-        user = UserProfile.query.filter_by(id=current_user.id).first()
-        return render_template('profile.html',user=user)
+        try:
+            print("current_user",current_user.id)
+            user = UserProfile.query.filter_by(id=current_user.id).first()
+            return render_template('profile.html',user=user)
+        except Exception as e:
+            print(e)
+            return render_template('profile.html')
     if request.method == 'POST':
         try:
             imgsrc = request.form["imgsrc"]
@@ -224,114 +224,137 @@ def profile():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    today_date = date.today()
-    user = UserProfile.query.filter_by(id=current_user.id).first()
-    my_data = list(Account.query.filter_by(user_id=current_user.id).all())
-    my_catgeory = Category.query.filter_by(user_id=current_user.id).all()
-    my_expense = db.session.execute(f"select SUM(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id}").all()
-    my_income = db.session.execute(f"select SUM(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id}").all()
-    this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
-    this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
-    print("--->>>",my_expense,my_income,this_month_exp,this_month_income)
-    print("--->>>",session.get('visits'))
-    
-    return render_template('Dashboard.html',user=user,data= my_data,category=my_catgeory,expenses=this_month_exp,income=this_month_income)
+    try:
+        today_date = date.today()
+        user = UserProfile.query.filter_by(id=current_user.id).first()
+        my_data = list(Account.query.filter_by(user_id=current_user.id).all())
+        my_catgeory = Category.query.filter_by(user_id=current_user.id).all()
+        my_expense = db.session.execute(f"select SUM(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id}").all()
+        my_income = db.session.execute(f"select SUM(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id}").all()
+        this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+        this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+        print("--->>>",my_expense,my_income,this_month_exp,this_month_income)
+        print("--->>>",session.get('visits'))
+        db.session.commit()
+        return render_template('Dashboard.html',user=user,data= my_data,category=my_catgeory,expenses=this_month_exp,income=this_month_income)
+    except Exception as e:
+        print(e)
+        return "Some Error occurred"
 
 @app.route('/report')
 @login_required
 def report():
-    today_date = date.today()
-    pie_data = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year} group by category").all()
-    db.session.commit()
-    pie_data_income = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Income' and user_id = {current_user.id}  and month = {today_date.month} and year = {today_date.year} group by category").all()
-    db.session.commit()
-    area_data_expenses = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Expenses' and user_id = {current_user.id} group by date")
-    db.session.commit()
-    area_data_expenses_2 = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Expenses' and user_id = {current_user.id} group by date")
-    db.session.commit()
-    area_data_income = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Income' and user_id = {current_user.id} group by date")
-    db.session.commit()
-    print("--->>>",pie_data)
-    user = UserProfile.query.filter_by(id=current_user.id).first()
-    column_chart_income = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Income' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
-    column_chart_expenses = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Expenses' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
-    user = UserProfile.query.filter_by(id=current_user.id).first()
-    this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
-    this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
-    print("--->>>",this_month_exp,this_month_income)
+    try:
+        today_date = date.today()
+        pie_data = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year} group by category").all()
+        db.session.commit()
+        pie_data_income = db.session.execute(f"select SUM(amount) as am,category from account where amounttype = 'Income' and user_id = {current_user.id}  and month = {today_date.month} and year = {today_date.year} group by category").all()
+        db.session.commit()
+        area_data_expenses = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Expenses' and user_id = {current_user.id} group by date")
+        db.session.commit()
+        area_data_expenses_2 = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Expenses' and user_id = {current_user.id} group by date")
+        db.session.commit()
+        area_data_income = db.session.execute(f"select SUM(amount) AS am,date from account where amounttype = 'Income' and user_id = {current_user.id} group by date")
+        db.session.commit()
+        print("--->>>",pie_data)
+        user = UserProfile.query.filter_by(id=current_user.id).first()
+        column_chart_income = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Income' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
+        column_chart_expenses = db.session.execute(f"select sum(amount) AS inc, month from account where amounttype = 'Expenses' and user_id = {current_user.id} and year = {today_date.year} group by month").all()
+        user = UserProfile.query.filter_by(id=current_user.id).first()
+        this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+        this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+        print("--->>>",this_month_exp,this_month_income)
 
-    db.session.commit()
-    print("--->>> cc ",column_chart_income,column_chart_expenses)
-    return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2,column_chart_income=column_chart_income,column_chart_expenses=column_chart_expenses,expenses=this_month_exp,income=this_month_income)
+        db.session.commit()
+        print("--->>> cc ",column_chart_income,column_chart_expenses)
+        return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2,column_chart_income=column_chart_income,column_chart_expenses=column_chart_expenses,expenses=this_month_exp,income=this_month_income)
+    except Exception as e:
+        print(e)
+        return "Some Error occurred"
 
 @app.route('/item', methods=['GET', 'POST','DELETE'])
 @login_required
 def item():
     if request.method == 'POST':
-        # global data
-        today_date = date.today()
-        gridRadios = request.form["gridRadios"]
-        category = request.form["category"]
-        amount = request.form["amount"]
-        dates = request.form["date"]
-        new_date=datetime.strptime(dates, "%Y-%m-%d")
-        print("--->>> ",dates,new_date.month)
-        add_acc = Account(amount = amount, amounttype = gridRadios,category= category,date = dates,user_id=current_user.id,day=new_date.day,month=new_date.month,year=new_date.year)
-        is_add_befor=db.session.execute(f"SELECT COUNT(category) as ct FROM account WHERE category = '{category}' and user_id = {current_user.id} and amounttype = 'Expenses' and day = {new_date.day} and month={new_date.month} and year = {new_date.year}").all()
-        db.session.add(add_acc)
-        db.session.commit()
-        usese = UserProfile.query.filter_by(id=current_user.id).first()
-        this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
-        this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
-        calculate_budget = usese.salary - usese.saving - this_month_exp[0].ex + this_month_income[0].inc
-        print("--->>>",calculate_budget)
-        print("--->>>",this_month_exp,this_month_income)
-        print("--->>>",is_add_befor)
-        if calculate_budget <= 1000 and  calculate_budget >= 1:
-            flash("You are in danger of going over your budget")
+        try:
+            today_date = date.today()
+            gridRadios = request.form["gridRadios"]
+            category = request.form["category"]
+            amount = request.form["amount"]
+            dates = request.form["date"]
+            new_date=datetime.strptime(dates, "%Y-%m-%d")
+            print("--->>> ",dates,new_date.month)
+            add_acc = Account(amount = amount, amounttype = gridRadios,category= category,date = dates,user_id=current_user.id,day=new_date.day,month=new_date.month,year=new_date.year)
+            is_add_befor=db.session.execute(f"SELECT COUNT(category) as ct FROM account WHERE category = '{category}' and user_id = {current_user.id} and amounttype = 'Expenses' and day = {new_date.day} and month={new_date.month} and year = {new_date.year}").all()
+            db.session.add(add_acc)
+            db.session.commit()
+            usese = UserProfile.query.filter_by(id=current_user.id).first()
+            this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+            this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
+            calculate_budget = usese.salary - usese.saving - this_month_exp[0].ex + this_month_income[0].inc
+            print("--->>>",calculate_budget)
+            print("--->>>",this_month_exp,this_month_income)
+            print("--->>>",is_add_befor)
+            if calculate_budget <= 1000 and  calculate_budget >= 1:
+                flash("You are in danger of going over your budget")
+                return redirect(url_for('dashboard'))
+            elif calculate_budget <= 0:
+                flash("Your Budget is Over")
+                return redirect(url_for('dashboard'))
+            if int(is_add_befor[0].ct) >=1:
+                flash('You Are Investing This Again')
             return redirect(url_for('dashboard'))
-        elif calculate_budget <= 0:
-            flash("Your Budget is Over")
-            return redirect(url_for('dashboard'))
-        if int(is_add_befor[0].ct) >=1:
-            flash('You Are Investing This Again')
-        return redirect(url_for('dashboard'))
+        except Exception as e:
+            print(e)
+            return "Some Error occurred"
     if request.method == 'DELETE':
-        print("--->>>",request.form["id"])
-        acc = Account.query.filter_by(aid=request.form["id"],user_id=current_user.id).first()
-        db.session.delete(acc)
-        db.session.commit()
-        return "Done"
+        try:
+            print("--->>>",request.form["id"])
+            acc = Account.query.filter_by(aid=request.form["id"],user_id=current_user.id).first()
+            db.session.delete(acc)
+            db.session.commit()
+            return "Done"
+        except Exception as e:
+            print(e)
+            return "Some Error occurred"
 @app.route('/edit',methods=['POST'])
 @login_required
 def edit():
-    text = request.form["text"]
-    category = request.form["category"]
-    money = request.form["money"]
-    date = request.form["date"]
-    id = request.form["id"]
-    new_date=datetime.strptime(date, "%Y-%m-%d")
-    print(text,category,money,date,(id))
-    edit_acc = Account.query.filter_by(aid=id,user_id=current_user.id).first()
-    edit_acc.amount = int(money[2:])
-    edit_acc.amounttype = text
-    edit_acc.category = category
-    edit_acc.date = date
-    edit_acc.day = new_date.day
-    edit_acc.month = new_date.month
-    edit_acc.year = new_date.year
-    db.session.add(edit_acc)
-    db.session.commit()
-    return "Here"
+    try:
+        text = request.form["text"]
+        category = request.form["category"]
+        money = request.form["money"]
+        date = request.form["date"]
+        id = request.form["id"]
+        new_date=datetime.strptime(date, "%Y-%m-%d")
+        print(text,category,money,date,(id))
+        edit_acc = Account.query.filter_by(aid=id,user_id=current_user.id).first()
+        edit_acc.amount = int(money[2:])
+        edit_acc.amounttype = text
+        edit_acc.category = category
+        edit_acc.date = date
+        edit_acc.day = new_date.day
+        edit_acc.month = new_date.month
+        edit_acc.year = new_date.year
+        db.session.add(edit_acc)
+        db.session.commit()
+        return "Here"
+    except Exception as e:
+        print(e)
+        return "Some Error occurred"
 @app.route('/addcategory',methods=['POST'])
 @login_required
 def addcategory():
-    category = request.form["category"]
-    gridRadios = request.form["gridRadios"]
-    print(category)
-    add_cat = Category(category=category,amounttype= gridRadios,user_id=current_user.id)
-    db.session.add(add_cat)
-    db.session.commit()
-    return redirect(url_for('dashboard'))
+    try:
+        category = request.form["category"]
+        gridRadios = request.form["gridRadios"]
+        print(category)
+        add_cat = Category(category=category,amounttype= gridRadios,user_id=current_user.id)
+        db.session.add(add_cat)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        print(e)
+        return "Some Error occurred"
 if __name__ == '__main__':
     app.run(debug=True)
