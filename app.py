@@ -75,7 +75,7 @@ class Account(db.Model):
 class Category(db.Model):
     __tablename__ = 'category'
     cid = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(120), nullable=False, unique=True)
+    category = db.Column(db.String(120), nullable=False)
     amounttype = db.Column(db.String(120), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('userprofile.id'))
 @login_manager.user_loader
@@ -291,9 +291,16 @@ def item():
             usese = UserProfile.query.filter_by(id=current_user.id).first()
             this_month_exp = db.session.execute(f"select sum(amount) AS ex from account where amounttype = 'Expenses' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
             this_month_income = db.session.execute(f"select sum(amount) AS inc from account where amounttype = 'Income' and user_id = {current_user.id} and month = {today_date.month} and year = {today_date.year}").all()
-            calculate_budget = usese.salary - usese.saving - this_month_exp[0].ex + this_month_income[0].inc
+            print("--->>> RR ",this_month_exp,this_month_income)
+            try:
+                if this_month_income == None or this_month_exp== None:
+                    calculate_budget = usese.salary - usese.saving
+                else:
+                    calculate_budget = usese.salary - usese.saving - this_month_exp[0].ex + this_month_income[0].inc
+            except Exception as e:
+                print(e)
+                calculate_budget = usese.salary - usese.saving
             print("--->>>",calculate_budget)
-            print("--->>>",this_month_exp,this_month_income)
             print("--->>>",is_add_befor)
             if calculate_budget <= 1000 and  calculate_budget >= 1:
                 flash("You are in danger of going over your budget")
@@ -329,7 +336,12 @@ def edit():
         new_date=datetime.strptime(date, "%Y-%m-%d")
         print(text,category,money,date,(id))
         edit_acc = Account.query.filter_by(aid=id,user_id=current_user.id).first()
-        edit_acc.amount = int(money[2:])
+        money= money.replace("$", " ")
+        money=money.replace("+", " ")
+        money=money.replace("-", " ")
+        print("--->>> MO ",money)
+        edit_acc.amount = int(money.strip())
+        print("--->>> MO ",money)
         edit_acc.amounttype = text
         edit_acc.category = category
         edit_acc.date = date
