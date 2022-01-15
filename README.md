@@ -1,4 +1,5 @@
 # Cash-Flow-Management
 
-`pip install flask flask-sqlalchemy`
-`pip install flask_login`
+<h2>Link</h2>
+
+https://cash--flow.herokuapp.com/
