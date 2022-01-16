@@ -112,6 +112,8 @@ function deletes(id) {
   });
 }
 function dash(id) {
+  document.getElementById('clickadd').click();
+  console.log("DASH is Called");
   console.log(document.getElementById("D" + id).innerHTML)
   var lent = document.getElementsByClassName("col-2 pe-5 no").length
   // for (i = 0; i < lent; i++) {

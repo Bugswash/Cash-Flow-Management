@@ -135,10 +135,19 @@ def confirm_email(token):
         db.session.add(conf)
         db.session.commit()
     except SignatureExpired:
+        db.session.rollback()
+        db.session.commit()
         return "The Token Is Expired"
     except BadSignature:
+        db.session.rollback()
+        db.session.commit()
         return "The token is invalid"
-    return "This email worked"
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        db.session.commit()
+        return "Some Error Occured"
+    return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -167,12 +176,15 @@ def login():
                 user = UserProfile.query.filter_by(
                     id=session.get('visits')).first()
                 print("--->>>",user.id)
+                db.session.commit()
                 return redirect(url_for('dashboard'))
             else:
                 flash('Password Is Incorrect')
                 return render_template('index.html', flag=2)
         except Exception as e:
             print(e)
+            db.session.rollback()
+            db.session.commit()
             flash('Username and Password Are Incorrect')
             return render_template('index.html', flag=2)
     return render_template('index.html')
@@ -239,6 +251,8 @@ def dashboard():
         return render_template('Dashboard.html',user=user,data= my_data,category=my_catgeory,expenses=this_month_exp,income=this_month_income)
     except Exception as e:
         print(e)
+        db.session.rollback()
+        db.session.commit()
         return "Some Error occurred"
 
 @app.route('/report')
@@ -270,6 +284,8 @@ def report():
         return render_template('report.html',user=user,pie_data=pie_data,pie_data_income=pie_data_income,area_data_expenses=area_data_expenses,area_data_income=area_data_income,area_data_expenses_2=area_data_expenses_2,column_chart_income=column_chart_income,column_chart_expenses=column_chart_expenses,expenses=this_month_exp,income=this_month_income)
     except Exception as e:
         print(e)
+        db.session.rollback()
+        db.session.commit()
         return "Some Error occurred"
 
 @app.route('/item', methods=['GET', 'POST','DELETE'])
@@ -313,6 +329,8 @@ def item():
             return redirect(url_for('dashboard'))
         except Exception as e:
             print(e)
+            db.session.rollback()
+            db.session.commit()
             return "Some Error occurred"
     if request.method == 'DELETE':
         try:
@@ -323,6 +341,8 @@ def item():
             return "Done"
         except Exception as e:
             print(e)
+            db.session.rollback()
+            db.session.commit()
             return "Some Error occurred"
 @app.route('/edit',methods=['POST'])
 @login_required
@@ -360,6 +380,8 @@ def edit():
         return redirect(url_for('dashboard'))
     except Exception as e:
         print(e)
+        db.session.rollback()
+        db.session.commit()
         return "Some Error occurred"
 @app.route('/addcategory',methods=['POST'])
 @login_required
@@ -374,6 +396,8 @@ def addcategory():
         return redirect(url_for('dashboard'))
     except Exception as e:
         print(e)
+        db.session.rollback()
+        db.session.commit()
         return "Some Error occurred"
 @app.route('/reset_link',methods=['GET','POST'])
 def reset_link():
@@ -414,9 +438,18 @@ def reset_password(token):
             db.session.commit()
             return redirect('/')
     except SignatureExpired:
+        db.session.rollback()
+        db.session.commit()
         return "The Token Is Expired"
     except BadSignature:
+        db.session.rollback()
+        db.session.commit()
         return "The token is invalid"
-    return "This email worked"
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        db.session.commit()
+        return "Some Error Occurred"
+    return redirect(url_for('login'))
 if __name__ == '__main__':
     app.run(debug=True)
