@@ -328,29 +328,36 @@ def item():
 @login_required
 def edit():
     try:
-        text = request.form["text"]
+        # text = request.form["text"]
+        # category = request.form["category"]
+        # money = request.form["money"]
+        # date = request.form["date"]
+        # id = request.form["id"]
+        # new_date=datetime.strptime(date, "%Y-%m-%d")
+        gridRadios = request.form["gridRadios"]
         category = request.form["category"]
-        money = request.form["money"]
-        date = request.form["date"]
+        amount = request.form["amount"]
+        dates = request.form["date"]
         id = request.form["id"]
-        new_date=datetime.strptime(date, "%Y-%m-%d")
-        print(text,category,money,date,(id))
+        print("---->>>> ID ",id)
+        new_date=datetime.strptime(dates, "%Y-%m-%d")
+        print(gridRadios,category,amount,dates,(id))
         edit_acc = Account.query.filter_by(aid=id,user_id=current_user.id).first()
-        money= money.replace("$", " ")
-        money=money.replace("+", " ")
-        money=money.replace("-", " ")
-        print("--->>> MO ",money)
-        edit_acc.amount = int(money.strip())
-        print("--->>> MO ",money)
-        edit_acc.amounttype = text
+        amount= amount.replace("$", " ")
+        amount=amount.replace("+", " ")
+        amount=amount.replace("-", " ")
+        print("--->>> MO ",amount)
+        edit_acc.amount = int(amount.strip())
+        print("--->>> MO ",amount)
+        edit_acc.amounttype = gridRadios
         edit_acc.category = category
-        edit_acc.date = date
+        edit_acc.date = dates
         edit_acc.day = new_date.day
         edit_acc.month = new_date.month
         edit_acc.year = new_date.year
         db.session.add(edit_acc)
         db.session.commit()
-        return "Here"
+        return redirect(url_for('dashboard'))
     except Exception as e:
         print(e)
         return "Some Error occurred"
